@@ -9,5 +9,12 @@
     "strict": true,
     "skipLibCheck": true
   },
-  "include": ["src/**/*"]
+  "include": [
+    "src/index.ts",
+    "src/config/**/*",
+    "src/controllers/**/*",
+    "src/middlewares/**/*",
+    "src/routes/**/*",
+    "src/services/**/*"
+  ]
 }
