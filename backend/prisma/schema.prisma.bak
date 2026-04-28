@@ -1,0 +1,145 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Lead {
+  id                Int       @id @default(autoincrement())
+  nome              String
+  whatsapp          String    @unique
+  cidade            String?
+  score             Int       @default(0)
+  status            String    @default("Novo Lead")
+  flag_fora_horario Boolean   @default(false)
+  ultima_interacao  DateTime  @default(now())
+  veiculo_interesse String?
+  tipo_compra       String?
+  veiculo_id        Int?
+  vendedor_id       Int?
+  criado_em         DateTime  @default(now())
+  
+  // UTM Tracking (rastreio de anúncios)
+  utm_source        String?   // meta, google, tiktok, organico
+  utm_medium        String?   // cpc, social, whatsapp
+  utm_campaign      String?   // nome da campanha
+  utm_content       String?   // criativo ou variação do anúncio
+  
+  agendamentos      Agendamento[]
+  tarefas           Tarefa[]
+  vendedor          Usuario?  @relation("VendedorLeads", fields: [vendedor_id], references: [id])
+}
+
+model Veiculo {
+  id            Int      @id @default(autoincrement())
+  marca         String
+  modelo        String
+  ano           Int
+  preco         Float
+  fipe          Float?
+  demanda       String   @default("Media")
+  status        String   @default("Disponivel") // Disponivel, Vendido, Reservado
+  tipo_estoque  String   @default("Proprio")    // Proprio, Consignado
+  data_entrada  DateTime @default(now())
+  placa         String?
+  km            Int?
+  cor           String?
+  combustivel   String?
+  cambio        String?
+  fotos         String?  // JSON stringified array of URLs
+  observacoes   String?
+}
+
+model Tarefa {
+  id          Int      @id @default(autoincrement())
+  titulo      String
+  descricao   String?
+  vencimento  DateTime
+  concluida   Boolean  @default(false)
+  lead_id     Int?
+  usuario_id  Int
+  criado_em   DateTime @default(now())
+
+  lead        Lead?    @relation(fields: [lead_id], references: [id])
+  usuario     Usuario  @relation(fields: [usuario_id], references: [id])
+}
+
+model MensagemPronta {
+  id        Int      @id @default(autoincrement())
+  titulo    String
+  conteudo  String
+  categoria String?  // Saudação, Documentos, Fechamento
+}
+
+model Agendamento {
+  id        Int      @id @default(autoincrement())
+  lead_id   Int
+  data      DateTime
+  tipo      String   
+  
+  lead      Lead     @relation(fields: [lead_id], references: [id])
+}
+
+model PostSocial {
+  id               Int      @id @default(autoincrement())
+  plataforma       String   // Instagram, TikTok, YouTube, Kwai, Facebook
+  link             String
+  titulo           String?
+  thumbnail        String?
+  visualizacoes    Int      @default(0)
+  likes            Int      @default(0)
+  comentarios      Int      @default(0)
+  compartilhamentos Int     @default(0)
+  salvamentos      Int      @default(0)
+  alcance          Int      @default(0)
+  retencao_media   Float    @default(0)
+  horas_assistidas Float    @default(0)
+  data_postagem    DateTime @default(now())
+  criado_em        DateTime @default(now())
+}
+
+model StatusSocial {
+  id            Int      @id @default(autoincrement())
+  plataforma    String
+  seguidores    Int      @default(0)
+  data          DateTime @default(now())
+}
+
+model AdsInvestimento {
+  id                Int      @id @default(autoincrement())
+  campanha          String
+  plataforma        String   // Meta, Google, TikTok, YouTube
+  periodo_inicio    DateTime
+  periodo_fim       DateTime
+  investimento      Float    @default(0)
+  impressoes        Int      @default(0)
+  cliques           Int      @default(0)
+  leads_gerados     Int      @default(0)
+  conversoes        Int      @default(0)  // leads que viraram vendas
+  criado_em         DateTime @default(now())
+}
+
+model SocialToken {
+  id              Int      @id @default(autoincrement())
+  plataforma      String   @unique  // instagram, youtube, tiktok
+  access_token    String
+  refresh_token   String?
+  expires_at      DateTime?
+  extra_data      String?  // JSON com ig_user_id, channel_id, etc
+  atualizado_em   DateTime @default(now())
+}
+
+model Usuario {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  senha     String
+  nome      String
+  role      String   @default("Vendedor") // Admin, Vendedor
+  criado_em DateTime @default(now())
+  
+  tarefas   Tarefa[]
+  leads     Lead[]   @relation("VendedorLeads")
+}
