@@ -10,7 +10,8 @@ export default function Login() {
     e.preventDefault()
     setErro('')
     try {
-      const res = await axios.post(`http://${window.location.hostname}:3000/api/auth/login`, { email, senha })
+      const apiUrl = import.meta.env.VITE_API_URL || `http://${window.location.hostname}:3000/api`
+      const res = await axios.post(`${apiUrl}/auth/login`, { email, senha })
       localStorage.setItem('token', res.data.token)
       window.location.href = '/'
     } catch (err: any) {
