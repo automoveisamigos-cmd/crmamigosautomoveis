@@ -23,3 +23,15 @@ services:
         sync: false
       - key: NODE_ENV
         value: production
+
+  - type: static
+    name: crm-amigos-frontend
+    runtime: static
+    region: oregon
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    publishDir: dist
+    envVars:
+      - key: VITE_API_URL
+        value: https://crm-amigos-backend.onrender.com/api
+
