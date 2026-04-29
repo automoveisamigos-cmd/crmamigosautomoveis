@@ -24,7 +24,7 @@ services:
       - key: NODE_ENV
         value: production
 
-  - type: web
+  - type: static_site
     name: crm-amigos-frontend
     runtime: static
     region: oregon
